@@ -30,6 +30,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  dio: ^5.4.1 # Untuk HTTP Request
+  provider: ^6.1.1 # Untuk State Management
+  flutter_secure_storage: ^9.0.0 # Wajib untuk keamanan token# Serialization (Konversi JSON dari Golang ke Model Dart)
+  json_annotation: ^4.8.1
+  intl: ^0.18.1
+
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -38,6 +45,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Generator otomatis untuk serialization
+  build_runner: ^2.4.6 
+  json_serializable: ^6.7.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
