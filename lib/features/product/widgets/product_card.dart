@@ -1,6 +1,8 @@
 // lib/features/product/widgets/product_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../data/providers/product_provider.dart';
 import '../../../data/models/product.dart';
 import '../screens/product_form_screen.dart';
 import '../../../components/atoms/app_typography.dart'; // Atom
@@ -59,8 +61,56 @@ class ProductCard extends StatelessWidget {
             ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () {
-                // TODO: Panggil ProductProvider.deleteProduct(product.id)
+              onPressed: () async {
+                // Tampilkan dialog konfirmasi sebelum menghapus
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Konfirmasi'),
+                    content: Text(
+                      'Anda yakin ingin menghapus "${product.name}"?',
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text('Batal'),
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                      ),
+                      TextButton(
+                        child: const Text(
+                          'Hapus',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                      ),
+                    ],
+                  ),
+                );
+
+                // Jika pengguna menekan "Hapus"
+                if (confirm == true) {
+                  try {
+                    // Panggil provider untuk menghapus produk
+                    await Provider.of<ProductProvider>(
+                      context,
+                      listen: false,
+                    ).deleteProduct(product.id);
+                    // Tampilkan notifikasi sukses
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('"${product.name}" berhasil dihapus.'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } catch (e) {
+                    // Tampilkan notifikasi error
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Gagal menghapus: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
               },
             ),
           ],

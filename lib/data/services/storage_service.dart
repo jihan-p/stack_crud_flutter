@@ -1,20 +1,24 @@
-// lib/utils/auth_storage.dart
+// lib/data/services/storage_service.dart
+// Menggunakan flutter_secure_storage (asumsi package sudah di-install)
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class AuthStorage {
-  static const _storage = FlutterSecureStorage();
-  static const _accessTokenKey = 'access_token';
+class StorageService {
+  final _storage = const FlutterSecureStorage();
+  static const _keyToken = 'jwt_token';
 
-  static Future<void> saveToken(String token) async {
-    await _storage.write(key: _accessTokenKey, value: token);
+  // Menyimpan JWT
+  Future<void> saveToken(String token) async {
+    await _storage.write(key: _keyToken, value: token);
   }
 
-  static Future<String?> getToken() async {
-    return await _storage.read(key: _accessTokenKey);
+  // Membaca JWT
+  Future<String?> readToken() async {
+    return await _storage.read(key: _keyToken);
   }
 
-  static Future<void> deleteToken() async {
-    await _storage.delete(key: _accessTokenKey);
+  // Menghapus JWT (Logout)
+  Future<void> deleteToken() async {
+    await _storage.delete(key: _keyToken);
   }
 }

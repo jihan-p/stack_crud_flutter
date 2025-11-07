@@ -1,34 +1,50 @@
 // lib/components/organisms/login_form.dart
 
 import 'package:flutter/material.dart';
-import '../molecules/input_form_field.dart';
-import '../atoms/primary_button.dart';
+import '../../../components/molecules/input_form_field.dart';
+import '../../../components/atoms/primary_button.dart';
 
-class LoginForm extends StatelessWidget {
+class LoginForm extends StatefulWidget {
   // Terima callback untuk logika submit
-  final VoidCallback onSubmit;
+  final Function(String email, String password) onSubmit;
 
   const LoginForm({required this.onSubmit, Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    // State management controller (dari BLoC/Provider) diimplementasikan di sini
+  State<LoginForm> createState() => _LoginFormState();
+}
 
+class _LoginFormState extends State<LoginForm> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Menggunakan InputFormField (Molecule)
-        InputFormField(label: 'Email', controller: TextEditingController()),
-        
+        InputFormField(label: 'Email', controller: _emailController),
+
         // Menggunakan InputFormField (Molecule) untuk Password
-        InputFormField(label: 'Password', controller: TextEditingController()),
+        InputFormField(label: 'Password', controller: _passwordController),
 
         const SizedBox(height: 24),
 
         // Menggunakan PrimaryButton (Atom)
         PrimaryButton(
           text: 'Login ke Golang API',
-          onPressed: onSubmit, // Memanggil logika login API
+          onPressed: () {
+            // Memanggil logika login API dengan data dari controller
+            widget.onSubmit(_emailController.text, _passwordController.text);
+          },
         ),
       ],
     );
