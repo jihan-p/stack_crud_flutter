@@ -35,6 +35,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> login(String email, String password) async {
     _status = AuthStatus.loading;
+    notifyListeners(); // Notify UI to show loading indicator
 
     try {
       // Panggil Service yang berkomunikasi dengan Golang API
@@ -43,28 +44,49 @@ class AuthProvider extends ChangeNotifier {
         password,
       );
 
-      // Jika berhasil
-      _user = User.fromJson(result['user']);
-      // Token sudah disimpan di StorageService di dalam AuthService
+      // TAMBAHKAN INI: Lihat apa isi result
+      print('Auth Provider: API result received: $result');
+
+      // PERBAIKAN: Buat Map yang hanya berisi data User dari root JSON
+      _user = User.fromJson({
+        'id': result['user_id'],
+        'email':
+            email, // Email diambil dari input, karena tidak ada di response
+        'role': result['role'],
+        // 'name' tidak ada di model User, jadi kita abaikan untuk saat ini.
+        // Jika ingin menambahkannya, update model User terlebih dahulu.
+      });
+
+      // Simpan token yang sekarang ada di root response
+      final String token = result['token'];
+      await _storageService.saveToken(token);
+
       _status = AuthStatus.success;
       print('AuthProvider: Status changed to SUCCESS. Notifying listeners...');
       _errorMessage = '';
+      // KUNCI: Panggil notifyListeners() di akhir blok sukses untuk memicu navigasi.
+      notifyListeners();
     } catch (e) {
       // Jika Gagal (misalnya HTTP 401 dari Golang)
       _errorMessage = e.toString();
       _status = AuthStatus.error;
       print('AuthProvider: Status changed to ERROR. Error: $_errorMessage');
-      // Pastikan untuk menghapus data user jika login gagal
       _user = null;
+      notifyListeners(); // Notify UI about the error state
+      // Re-throw the exception so the UI layer (LoginScreen) can catch it
+      // and show a SnackBar.
+      throw e;
     }
-    notifyListeners(); // Beritahu UI untuk mengupdate tampilan (tampilkan User/Error)
   }
 
   // Tambahkan fungsi logout, register, dll. di sini
   Future<void> logout() async {
+    // 1. Panggil service untuk menghapus token dari storage
     await _authService.logout();
+    // 2. Reset state di provider
     _user = null;
     _status = AuthStatus.initial;
+    // 3. Beri tahu UI untuk kembali ke LoginScreen
     notifyListeners();
   }
 }

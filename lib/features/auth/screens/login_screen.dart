@@ -10,19 +10,22 @@ class LoginScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     print('LoginScreen: _handleLogin triggered. Calling authProvider.login...');
 
-    await authProvider.login(email, password);
-    print('LoginScreen: authProvider.login finished. Status is: ${authProvider.status}');
-    // Setelah login selesai, periksa statusnya.
-    // Gunakan 'context.mounted' untuk memastikan widget masih ada di tree.
-    if (context.mounted && authProvider.status == AuthStatus.error) {
-      print('LoginScreen: Login failed. Showing SnackBar.');
-      // Jika gagal, tampilkan pesan error dari provider.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage),
-          backgroundColor: Colors.red,
-        ),
-      );
+    try {
+      await authProvider.login(email, password);
+      // Jika kode sampai di sini, berarti login berhasil dan navigasi
+      // akan ditangani oleh Consumer di main.dart. Tidak perlu aksi di sini.
+      print('LoginScreen: Login call successful. Awaiting navigation...');
+    } catch (e) {
+      // Jika AuthProvider melempar exception, tangkap di sini.
+      if (context.mounted) {
+        print('LoginScreen: Login failed. Showing SnackBar with error: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceFirst('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

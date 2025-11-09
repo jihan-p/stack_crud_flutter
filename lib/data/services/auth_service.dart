@@ -2,28 +2,43 @@
 
 import 'package:dio/dio.dart';
 import 'storage_service.dart'; // Import Storage Service
+import '../http_client.dart'; // Import the shared HttpClient
 import '../../config/app_config.dart';
 
 class AuthService {
-  final Dio _dio = Dio();
+  final Dio _dio = HttpClient.dioInstance; // Use the shared Dio instance
   final StorageService _storage = StorageService(); // Gunakan Storage Service
 
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await _dio.post(
-      '${AppConfig.baseUrl}/auth/login',
-      data: {'email': email, 'password': password},
-    );
+    try {
+      final response = await _dio.post(
+        '${AppConfig.baseUrl}/auth/login',
+        data: {'email': email, 'password': password},
+      );
 
-    if (response.statusCode == 200 && response.data['success'] == true) {
-      final String accessToken = response.data['data']['access_token'];
-      // ASPEK KRUSIAL: Menyimpan token dengan aman
-      await _storage.saveToken(accessToken);
+      // DEBUGGING DI SINI
+      print('Auth Service: Raw API response data: ${response.data}');
 
-      // Kembalikan data user ke AuthProvider
-      return response.data['data'];
-    } else {
+      if (response.statusCode == 200) {
+        // On a 200 OK, simply return the data map. Do not throw.
+        return response.data;
+      } else {
+        // This handles non-200 status codes that were not caught by DioException.
+        throw Exception(
+          'Server returned an unexpected status code: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      // This block catches network errors and non-2xx status codes (e.g., 401, 500).
+      // If e.response is null, it's likely a connection error (timeout, DNS, etc.)
+      if (e.response == null) {
+        throw Exception(
+          'Connection to server failed. Please check the network and server address.',
+        );
+      }
+      // If there is a response, use the server's error message.
       final errorMessage =
-          response.data['message'] ?? 'Gagal login ke API Golang';
+          e.response?.data['message'] ?? 'An unknown error occurred';
       throw Exception(errorMessage);
     }
   }
