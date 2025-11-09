@@ -6,10 +6,11 @@ import 'package:provider/provider.dart';
 // Import Providers Anda
 import 'data/providers/auth_provider.dart';
 import 'data/providers/product_provider.dart';
+import 'data/providers/user_provider.dart';
 
 // Import Screens (Halaman Awal)
 import 'features/auth/screens/login_screen.dart';
-import 'features/product/screens/product_list_screen.dart'; // Akan digunakan setelah login
+import 'features/main/screens/main_screen.dart';
 
 void main() {
   // 1. Pastikan Flutter Binding sudah diinisialisasi (penting untuk Secure Storage)
@@ -21,6 +22,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
       child: const MyApp(), // Panggil root widget Anda
     ),
@@ -52,7 +54,7 @@ class MyApp extends StatelessWidget {
 
           // Navigasi Bersyarat
           if (auth.isLoggedIn) {
-            return const ProductListScreen();
+            return const MainScreen();
           } else {
             return LoginScreen();
           }
