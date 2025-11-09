@@ -1,41 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../data/providers/auth_provider.dart';
-import '../../product/screens/product_list_screen.dart';
 import '../widgets/login_form.dart';
 
-class LoginScreen extends StatefulWidget {
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  bool _isLoading = false;
-
-  void _handleLogin(String email, String password) async {
-    setState(() {
-      _isLoading = true;
-    });
-
+class LoginScreen extends StatelessWidget {
+  void _handleLogin(BuildContext context, String email, String password) async {
+    // Dapatkan provider tanpa mendengarkan perubahan state di sini,
+    // karena kita hanya memicu aksi.
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    print('LoginScreen: _handleLogin triggered. Calling authProvider.login...');
 
     await authProvider.login(email, password);
-
-    // Setelah await selesai, periksa status dari provider
-    if (mounted) {
-      if (authProvider.status != AuthStatus.success) {
-        // Jika gagal, tampilkan pesan error dari provider
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authProvider.errorMessage),
-            backgroundColor: Colors.red,
-          ),
-        );
-        // Set _isLoading kembali ke false hanya jika terjadi error
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    print('LoginScreen: authProvider.login finished. Status is: ${authProvider.status}');
+    // Setelah login selesai, periksa statusnya.
+    // Gunakan 'context.mounted' untuk memastikan widget masih ada di tree.
+    if (context.mounted && authProvider.status == AuthStatus.error) {
+      print('LoginScreen: Login failed. Showing SnackBar.');
+      // Jika gagal, tampilkan pesan error dari provider.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -45,10 +32,20 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(title: const Text('Login')),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0), // Tambahkan padding
-          child: _isLoading
-              ? const CircularProgressIndicator()
-              : LoginForm(onSubmit: _handleLogin),
+          padding: const EdgeInsets.all(16.0),
+          // Gunakan Consumer untuk menampilkan loading atau form
+          child: Consumer<AuthProvider>(
+            builder: (context, auth, _) {
+              if (auth.status == AuthStatus.loading) {
+                return const CircularProgressIndicator();
+              }
+              // Bungkus _handleLogin dalam closure untuk menyertakan context.
+              return LoginForm(
+                onSubmit: (email, password) =>
+                    _handleLogin(context, email, password),
+              );
+            },
+          ),
         ),
       ),
     );

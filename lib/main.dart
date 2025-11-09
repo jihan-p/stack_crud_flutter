@@ -46,8 +46,12 @@ class MyApp extends StatelessWidget {
       // Gunakan Consumer untuk mendengarkan perubahan pada AuthProvider
       home: Consumer<AuthProvider>(
         builder: (context, auth, child) {
+          print(
+            'Main Consumer: Rebuilding UI. IsLoggedIn = ${auth.isLoggedIn}',
+          );
+
           // Navigasi Bersyarat
-          if (auth.status == AuthStatus.success) {
+          if (auth.isLoggedIn) {
             return const ProductListScreen();
           } else {
             return LoginScreen();
