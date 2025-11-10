@@ -89,4 +89,22 @@ class AuthProvider extends ChangeNotifier {
     // 3. Beri tahu UI untuk kembali ke LoginScreen
     notifyListeners();
   }
+
+  Future<void> forgotPassword(String email) async {
+    // Gunakan status loading yang sama untuk konsistensi
+    _status = AuthStatus.loading;
+    notifyListeners();
+
+    try {
+      await _authService.forgotPassword(email);
+      // Setelah berhasil, kembalikan status ke initial karena pengguna tidak login
+      _status = AuthStatus.initial;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+      _status = AuthStatus.error;
+      notifyListeners();
+      throw e; // Lemparkan kembali error agar UI dapat menampilkannya
+    }
+  }
 }

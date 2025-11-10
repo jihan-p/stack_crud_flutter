@@ -1,6 +1,7 @@
 // lib/components/organisms/login_form.dart
 
 import 'package:flutter/material.dart';
+import '../../../components/molecules/forgot_password_screen.dart';
 import '../../../components/molecules/input_form_field.dart';
 import '../../../components/atoms/primary_button.dart';
 
@@ -34,7 +35,11 @@ class _LoginFormState extends State<LoginForm> {
         InputFormField(label: 'Email', controller: _emailController),
 
         // Menggunakan InputFormField (Molecule) untuk Password
-        InputFormField(label: 'Password', controller: _passwordController),
+        InputFormField(
+          label: 'Password',
+          controller: _passwordController,
+          isPassword: true, // Tambahkan properti ini
+        ),
 
         const SizedBox(height: 24),
 
@@ -45,6 +50,19 @@ class _LoginFormState extends State<LoginForm> {
             // Memanggil logika login API dengan data dari controller
             widget.onSubmit(_emailController.text, _passwordController.text);
           },
+        ),
+
+        const SizedBox(height: 16),
+
+        // Tautan untuk Lupa Password
+        TextButton(
+          onPressed: () {
+            // Navigasi ke halaman Lupa Password
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const ForgotPasswordScreen(),
+            ));
+          },
+          child: const Text('Lupa Password?'),
         ),
       ],
     );
