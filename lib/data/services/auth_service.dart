@@ -49,4 +49,29 @@ class AuthService {
         .deleteToken(); // Menggunakan metode yang sudah ada untuk menghapus token
     // Jika perlu, panggil endpoint logout di Golang untuk membatalkan sesi/token (opsional)
   }
+
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await _dio.post(
+        '${AppConfig.baseUrl}/auth/forgot-password',
+        data: {'email': email},
+      );
+
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception(
+          'Server returned an unexpected status code: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.response == null) {
+        throw Exception(
+          'Connection to server failed. Please check your network.',
+        );
+      }
+      final errorMessage = e.response?.data['message'] ?? 'An unknown error occurred';
+      throw Exception(errorMessage);
+    }
+  }
 }
